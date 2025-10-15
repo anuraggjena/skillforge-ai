@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SkillForge AI
+
+SkillForge AI is a developer learning platform that bridges the gap between theory and practice. It uses AI to generate tailored coding projects, challenges, and instant code reviews, helping users build a verified portfolio and accelerate their careers.
+
+## Features
+
+- **AI-Powered Project Generation:** Create micro or real-world projects based on your skills.
+- **Custom Coding Challenges:** Generate challenges tailored to your skill level and interests.
+- **Instant AI Code Feedback:** Submit your GitHub repo for automated, actionable code reviews.
+- **Portfolio Builder:** Showcase completed projects and challenges, including AI feedback.
+- **Skill Graph:** Visualize your skill growth over time.
+- **Resume Upload:** Add your resume to your public portfolio.
+- **GitHub Integration:** Connect your GitHub account for seamless project submissions.
 
 ## Getting Started
 
-First, run the development server:
+1. **Install dependencies:**
+   ```sh
+   npm install
+   # or
+   yarn install
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2. **Set up environment variables:**
+   - Copy `.env.local.example` to `.env.local` and fill in required values (e.g., `DATABASE_URL`, `OPENAI_API_KEY`, Clerk keys).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. **Run the development server:**
+   ```sh
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4. **Open [http://localhost:3000](http://localhost:3000) in your browser.**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+- `app/` – Next.js app routes (dashboard, portfolio, API endpoints)
+- `components/` – UI and feature components (project generator, challenge generator, skill graph, etc.)
+- `lib/` – Database (Drizzle ORM), server actions, and utility functions
+- `public/` – Static assets
+- `scripts/` – Seed and utility scripts
 
-To learn more about Next.js, take a look at the following resources:
+## Technologies Used
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Next.js 15
+- React 19
+- Drizzle ORM (PostgreSQL)
+- Clerk (authentication)
+- UploadThing (file uploads)
+- OpenAI (AI project/challenge generation & code review)
+- Tailwind CSS
+- Radix UI & Lucide Icons
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+Deploy easily on [Vercel](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+See [Next.js deployment docs](https://nextjs.org/docs/app/building-your-application/deploying) for details.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+MIT © SkillForge Inc.
