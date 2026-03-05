@@ -3,7 +3,12 @@ import { auth } from '@clerk/nextjs/server';
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
+  defaultHeaders: {
+    "HTTP-Referer": "http://skillforge-dev.vercel.app",
+    "X-Title": "SkillForge AI",
+  }
 });
 
 export async function POST(req: Request) {
@@ -36,7 +41,7 @@ export async function POST(req: Request) {
 
     // Make the API call to OpenAI
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'openai/gpt-oss-120b:free',
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' },
     });

@@ -6,7 +6,14 @@ import { skills, projectSkills, projects } from "@/lib/drizzle/schema";
 import { and, eq, count, desc } from "drizzle-orm";
 import OpenAI from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
+  defaultHeaders: {
+    "HTTP-Referer": "http://skillforge-dev.vercel.app",
+    "X-Title": "SkillForge AI",
+  }
+});
 
 export async function getDailyChallenges() {
   const { userId } = await auth();
@@ -43,7 +50,7 @@ export async function getDailyChallenges() {
   `;
 
   const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'openai/gpt-oss-120b:free',
     messages: [{ role: 'user', content: prompt }],
     response_format: { type: 'json_object' },
   });
