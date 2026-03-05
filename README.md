@@ -2,6 +2,8 @@
 
 SkillForge AI is a developer learning platform that bridges the gap between theory and practice. It uses AI to generate tailored coding projects, challenges, and instant code reviews, helping users build a verified portfolio and accelerate their careers.
 
+Live Link: https://skillforge-dev.vercel.app
+
 ## Features
 
 - **AI-Powered Project Generation:** Create micro or real-world projects based on your skills.
