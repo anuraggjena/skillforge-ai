@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     `;
 
     const response = await openai.chat.completions.create({
-      model: 'openai/gpt-oss-120b:free',
+      model: 'openai/gpt-oss-20b:free',
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' },
     });
