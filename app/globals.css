@@ -1,8 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
 /* Dark mode variant */
 @custom-variant dark (&:is(.dark *));
+
+.font-serif-editorial {
+  font-family: 'Instrument Serif', Georgia, Cambria, 'Times New Roman', serif;
+}
+
+/* Liquid Glass Effect */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.01);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
+    rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+    rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
 
 /* Theme variable mapping */
 @theme inline {
@@ -92,7 +125,6 @@
   --sidebar-ring: oklch(0.6 0.05 270);
 }
 
-
 /* Dark mode - Keep your existing dark mode values as they are good */
 .dark {
   --background: oklch(0.129 0.042 264.695);
@@ -138,7 +170,6 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
-
 /* Base Layer */
 @layer base {
   * {
@@ -161,7 +192,6 @@
 }
 
 /* --- Aurora Background Adjustments for Light Mode --- */
-/* We'll use a media query to apply different styles when not in dark mode */
 .aurora-background::before {
   content: "";
   position: absolute;
@@ -170,20 +200,18 @@
   transform: translate(-50%, -50%);
   width: 1200px;
   height: 800px;
-  /* Dark mode default gradient: */
   background-image: radial-gradient(circle, rgba(168, 85, 247, 0.15), transparent 60%);
   animation: pulse 10s infinite;
   z-index: -1;
 }
 
-/* Light mode override for aurora background */
 html:not(.dark) .aurora-background::before {
-  background-image: radial-gradient(circle, rgba(100, 149, 237, 0.1), transparent 60%); /* A light blue glow */
-  opacity: 0.5; /* Slightly less prominent in light mode */
+  background-image: radial-gradient(circle, rgba(100, 149, 237, 0.1), transparent 60%);
+  opacity: 0.5;
   animation: pulseLight 10s infinite;
 }
 
-@keyframes pulseLight { /* Separate keyframes for light mode */
+@keyframes pulseLight {
   0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.4; }
   50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.7; }
   100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.4; }
@@ -217,15 +245,14 @@ html:not(.dark) .aurora-background::before {
 }
 
 .hide-scrollbar::-webkit-scrollbar {
-  display: none; /* For Chrome, Safari, and Edge */
+  display: none;
 }
 
 .hide-scrollbar {
-  -ms-overflow-style: none;  /* For IE and Edge */
-  scrollbar-width: none;  /* For Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-/* globals.css */
 ::-webkit-scrollbar {
   width: 8px;
 }

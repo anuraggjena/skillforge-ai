@@ -1,111 +1,57 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { UserButton, useUser } from "@clerk/nextjs";
-import { useState, useEffect } from "react";
-import { Logo } from "./logo";
-import { ThemeToggle } from "../theme-toggle";
+import Image from "next/image";
+import { useUser } from "@clerk/nextjs";
 
 export function Navbar() {
-  const { isSignedIn } = useUser();
-  const [activeSection, setActiveSection] = useState("");
+  const { isSignedIn, isLoaded } = useUser();
+  const userSignedIn = isLoaded && Boolean(isSignedIn);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      // The fix is applied here with `as NodeListOf<HTMLElement>`
-      const sections = document.querySelectorAll("section[id]") as NodeListOf<HTMLElement>;
-      let currentSection = "";
-
-      sections.forEach((section) => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        if (window.scrollY >= sectionTop - sectionHeight / 3) {
-          currentSection = section.id;
-        }
-      });
-      
-      if (window.scrollY < 200) {
-        currentSection = "";
-      }
-
-      setActiveSection(currentSection);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
+  const navLinks = [
+    { name: "Features", href: "#features" },
+    { name: "Workflow", href: "#workflow" },
+    { name: "Docs", href: "#docs" },
+  ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/80 px-4 md:px-6 backdrop-blur-lg">
-      <div className="flex h-16 items-center">
-        
-        <div className="flex-1 flex justify-start">
-          <Link href="/" className="flex items-center gap-1 font-semibold">
-          <Logo className="h-10 w-10 text-foreground"/>
-            <span className="font-semibold text-xl">SkillForge AI</span>
+    <header className="relative z-20 flex flex-row items-center justify-between px-6 sm:px-8 md:px-12 py-5 max-w-7xl mx-auto w-full">
+      {/* Logo: skillforge.dev */}
+      <Link
+        href="/"
+        className="text-xl sm:text-2xl tracking-tight text-[#E8E5D5] hover:text-white transition-colors flex items-center gap-2.5 font-bold"
+        style={{ fontFamily: "'Instrument Serif', serif" }}
+      >
+        <Image
+          src="/logo.svg"
+          alt="SkillForge"
+          width={28}
+          height={28}
+          className="w-7 h-7"
+        />
+        <span>skillforge.dev</span>
+      </Link>
+
+      {/* Nav links (hidden on mobile, md:flex) */}
+      <nav className="hidden md:flex items-center gap-8">
+        {navLinks.map((link) => (
+          <Link
+            key={link.name}
+            href={link.href}
+            className="text-sm font-medium text-[#E8E5D5]/75 hover:text-white transition-colors"
+          >
+            {link.name}
           </Link>
-        </div>
+        ))}
+      </nav>
 
-        <nav className="hidden md:flex flex-1 justify-center">
-          <div className="flex gap-8">
-            <Link
-              href="#home"
-              className={`text-md font-medium transition-colors ${
-                activeSection === 'home' ? 'text-foreground' : 'text-muted-foreground'
-              } hover:text-foreground`}
-              prefetch={false}
-            >
-              Home
-            </Link>
-            <Link
-              href="#features"
-              className={`text-md font-medium transition-colors ${
-                activeSection === 'features' ? 'text-foreground' : 'text-muted-foreground'
-              } hover:text-foreground`}
-              prefetch={false}
-            >
-              Features
-            </Link>
-            <Link
-              href="#testimonials"
-              className={`text-md font-medium transition-colors ${
-                activeSection === 'testimonials' ? 'text-foreground' : 'text-muted-foreground'
-              } hover:text-foreground`}
-              prefetch={false}
-            >
-              Testimonials
-            </Link>
-          </div>
-        </nav>
-
-        <div className="flex-1 flex justify-end">
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            {isSignedIn ? (
-              <>
-                <Link href="/dashboard">
-                  <Button variant="outline" className="hover:cursor-pointer">Dashboard</Button>
-                </Link>
-                <UserButton afterSignOutUrl="/" />
-              </>
-            ) : (
-              <>
-                <Link href="/sign-in">
-                  <Button variant="outline" className="hover:cursor-pointer">Sign In</Button>
-                </Link>
-                <Link href="/sign-up">
-                  <Button className="hover:cursor-pointer">Get Started</Button>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-        
-      </div>
+      {/* CTA: Login */}
+      <Link
+        href={userSignedIn ? "/dashboard" : "/sign-in"}
+        className="rounded-full px-5 py-2 text-xs sm:text-sm font-medium border border-[#E8E5D5]/25 hover:border-[#E8E5D5]/60 bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-md text-[#E8E5D5] hover:text-white transition-all cursor-pointer"
+      >
+        {userSignedIn ? "Dashboard" : "Login"}
+      </Link>
     </header>
   );
 }
