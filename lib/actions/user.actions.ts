@@ -15,22 +15,41 @@ export async function getUserById(userId: string) {
 
 export async function createUserInDb(userId: string) {
   try {
-    const clerk = await clerkClient()
+    const clerk = await clerkClient();
     const clerkUser = await clerk.users.getUser(userId);
     const email = clerkUser.emailAddresses[0]?.emailAddress ?? '';
-    const name = `${clerkUser.firstName ?? ''} ${clerkUser.lastName ?? ''}`.trim();
+    const fullName = `${clerkUser.firstName ?? ''} ${clerkUser.lastName ?? ''}`.trim();
+    const fallbackName = clerkUser.username || (email ? email.split('@')[0] : '') || 'Developer';
+    const name = fullName || fallbackName;
     const avatar = clerkUser.imageUrl;
 
-    const newUser = await db.insert(users).values({
-      id: userId,
-      email: email,
-      name: name,
-      avatarUrl: avatar,
-    }).returning();
+    const newUser = await db
+      .insert(users)
+      .values({
+        id: userId,
+        email: email,
+        name: name,
+        avatarUrl: avatar,
+      })
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          email: email,
+          ...(name ? { name } : {}),
+          ...(avatar ? { avatarUrl: avatar } : {}),
+        },
+      })
+      .returning();
     
-    return newUser[0];
+    return newUser[0] || null;
   } catch (error) {
     console.error("Error creating user in DB:", error);
+    try {
+      const existing = await getUserById(userId);
+      if (existing) return existing;
+    } catch {
+      // ignore
+    }
     return null;
   }
 }

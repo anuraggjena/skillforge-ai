@@ -10,7 +10,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
   defaultHeaders: {
     "HTTP-Referer": "http://skillforge-dev.vercel.app",
-    "X-Title": "SkillForge AI",
+    "X-Title": "Skillforge.dev",
   }
 });
 
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       : "The project must be a 'Real-World Project'. This means it should be a comprehensive, portfolio-worthy application.";
 
     const prompt = `
-      You are SkillForge AI, an expert mentor for developers. Your task is to generate a project brief.
+      You are Skillforge.dev, an expert mentor for developers. Your task is to generate a project brief.
       
       The user's skills are: ${userSkills}.
       Project Type Instructions: ${projectTypeInstruction}

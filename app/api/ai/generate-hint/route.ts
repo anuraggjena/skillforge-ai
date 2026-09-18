@@ -7,7 +7,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
   defaultHeaders: {
     "HTTP-Referer": "http://skillforge-dev.vercel.app",
-    "X-Title": "SkillForge AI",
+    "X-Title": "Skillforge.dev",
   }
 });
 
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
 
     // This prompt instructs the AI on how to behave
     const prompt = `
-      You are SkillForge AI, an expert developer mentor. A user is working on a project and has asked for a hint.
+      You are Skillforge.dev, an expert developer mentor. A user is working on a project and has asked for a hint.
       
       Project Title: "${projectTitle}"
       Project Description: "${projectDescription}"

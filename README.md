@@ -1,6 +1,6 @@
-# SkillForge AI
+# Skillforge.dev
 
-SkillForge AI is a developer learning platform that bridges the gap between theory and practice. It uses AI to generate tailored coding projects, challenges, and instant code reviews, helping users build a verified portfolio and accelerate their careers.
+Skillforge.dev is a developer learning platform that bridges the gap between theory and practice. It uses AI to generate tailored coding projects, challenges, and instant code reviews, helping users build a verified portfolio and accelerate their careers.
 
 Live Link: https://skillforge-dev.vercel.app
 

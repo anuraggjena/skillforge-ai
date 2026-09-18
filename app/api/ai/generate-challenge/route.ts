@@ -10,7 +10,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
   defaultHeaders: {
     "HTTP-Referer": "http://skillforge-dev.vercel.app",
-    "X-Title": "SkillForge AI",
+    "X-Title": "Skillforge.dev",
   }
 });
 
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     }
 
     const prompt = `
-      You are SkillForge AI, a challenge creator for a developer learning platform.
+      You are Skillforge.dev, a challenge creator for a developer learning platform.
       Your task is to generate a single, focused coding challenge based on a user's skills and a chosen difficulty level.
 
       User's skills: ${userSkills}.

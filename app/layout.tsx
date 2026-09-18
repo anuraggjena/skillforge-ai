@@ -6,11 +6,12 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ScrollToTop } from "@/components/shared/scroll-to-top";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SkillForge AI",
+  title: "Skillforge.dev",
   description: "Bridge the gap between learning and doing with AI-generated projects.",
 };
 
@@ -36,6 +37,7 @@ export default async function RootLayout({
           >
           <Toaster richColors /> 
           {children}
+          <ScrollToTop />
         </ThemeProvider>
       </body>
     </html>

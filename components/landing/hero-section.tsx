@@ -102,7 +102,7 @@ export function HeroSection() {
           transition={{ duration: 0.7, delay: 0.55, ease: easeCurve }}
           className="text-sm sm:text-base lg:text-[16px] text-[#E8E5D5]/70 font-normal leading-relaxed max-w-[480px] mb-6 sm:mb-8"
         >
-          SkillForge AI turns your tech stack into real-world projects, helps you sharpen your engineering skills, and turns your progress into proof.
+          Skillforge.dev turns your tech stack into real-world projects, helps you sharpen your engineering skills, and turns your progress into proof.
         </motion.p>
 
         {/* CTAs */}

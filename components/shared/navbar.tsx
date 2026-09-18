@@ -4,14 +4,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 
+import { usePathname } from "next/navigation";
+import { LogIn, LayoutDashboard } from "lucide-react";
+
 export function Navbar() {
   const { isSignedIn, isLoaded } = useUser();
   const userSignedIn = isLoaded && Boolean(isSignedIn);
+  const pathname = usePathname();
+  const isDocsActive = pathname?.startsWith("/docs");
 
   const navLinks = [
-    { name: "Features", href: "#features" },
-    { name: "Workflow", href: "#workflow" },
-    { name: "Docs", href: "#docs" },
+    { name: "Features", href: "/#features", isActive: false },
+    { name: "Workflow", href: "/#workflow", isActive: false },
+    { name: "Docs", href: "/docs", isActive: isDocsActive },
   ];
 
   return (
@@ -38,7 +43,11 @@ export function Navbar() {
           <Link
             key={link.name}
             href={link.href}
-            className="text-sm font-medium text-[#E8E5D5]/75 hover:text-white transition-colors"
+            className={`text-sm font-medium transition-colors ${
+              link.isActive
+                ? "text-white font-semibold underline underline-offset-8 decoration-[#E8E5D5]/50"
+                : "text-[#E8E5D5]/75 hover:text-white"
+            }`}
           >
             {link.name}
           </Link>
@@ -48,9 +57,19 @@ export function Navbar() {
       {/* CTA: Login */}
       <Link
         href={userSignedIn ? "/dashboard" : "/sign-in"}
-        className="rounded-full px-5 py-2 text-xs sm:text-sm font-medium border border-[#E8E5D5]/25 hover:border-[#E8E5D5]/60 bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-md text-[#E8E5D5] hover:text-white transition-all cursor-pointer"
+        className="flex items-center gap-2 rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-medium border border-[#E8E5D5]/25 hover:border-[#E8E5D5]/60 bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-md text-[#E8E5D5] hover:text-white transition-all cursor-pointer group"
       >
-        {userSignedIn ? "Dashboard" : "Login"}
+        {userSignedIn ? (
+          <>
+            <LayoutDashboard className="w-3.5 h-3.5 text-[#E8E5D5]/70 group-hover:text-white transition-colors" />
+            <span>Dashboard</span>
+          </>
+        ) : (
+          <>
+            <LogIn className="w-3.5 h-3.5 text-[#E8E5D5]/70 group-hover:text-white transition-colors" />
+            <span>Login</span>
+          </>
+        )}
       </Link>
     </header>
   );

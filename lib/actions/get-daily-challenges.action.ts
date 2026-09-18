@@ -11,7 +11,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
   defaultHeaders: {
     "HTTP-Referer": "http://skillforge-dev.vercel.app",
-    "X-Title": "SkillForge AI",
+    "X-Title": "Skillforge.dev",
   }
 });
 
@@ -34,7 +34,7 @@ export async function getDailyChallenges() {
 
   // 2. Ask the AI to generate 3 challenges based on these skills
   const prompt = `
-    You are SkillForge AI. Generate a list of exactly 3 unique, short, and engaging coding challenges for a user based on their top skills.
+    You are Skillforge.dev. Generate a list of exactly 3 unique, short, and engaging coding challenges for a user based on their top skills.
     The user's top skills are: ${skillList}.
     The challenges should vary in difficulty (Beginner, Intermediate).
 

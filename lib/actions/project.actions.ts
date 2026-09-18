@@ -14,7 +14,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
   defaultHeaders: {
     "HTTP-Referer": "http://skillforge-dev.vercel.app",
-    "X-Title": "SkillForge AI",
+    "X-Title": "Skillforge.dev",
   }
 });
 
@@ -78,7 +78,7 @@ export async function submitProjectForFeedback(projectId: number, repoUrl: strin
   }
 
   const prompt = `
-    You are SkillForge AI, a senior developer and expert code reviewer. Your task is to provide feedback on a user's project submission.
+    You are Skillforge.dev, a senior developer and expert code reviewer. Your task is to provide feedback on a user's project submission.
 
     Project Title: ${project.title}
     Project Description: ${project.description}
