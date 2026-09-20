@@ -1,11 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSignUp, useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, Loader2, User, AtSign } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  ArrowLeft,
+  Loader2,
+  User,
+  AtSign,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+} from "lucide-react";
 import Image from "next/image";
 import { AuthSocialButtons } from "./auth-social-buttons";
 import { AuthError } from "./auth-error";
@@ -27,6 +40,13 @@ export function CustomSignUp() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  // Username availability check state & instant client cache
+  const [usernameStatus, setUsernameStatus] = useState<
+    "idle" | "checking" | "available" | "taken" | "invalid"
+  >("idle");
+  const [usernameMessage, setUsernameMessage] = useState<string>("");
+  const usernameCache = useRef<Map<string, { available: boolean; message: string }>>(new Map());
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,6 +59,75 @@ export function CustomSignUp() {
       router.replace("/dashboard");
     }
   }, [isSignedIn, isUserLoaded, router]);
+
+  // Real-time debounced check for username uniqueness against the database
+  useEffect(() => {
+    const trimmed = username.trim().toLowerCase();
+    if (!trimmed) {
+      setUsernameStatus("idle");
+      setUsernameMessage("");
+      return;
+    }
+
+    if (trimmed.length < 3 || trimmed.length > 30) {
+      setUsernameStatus("invalid");
+      setUsernameMessage("Username must be between 3 and 30 characters.");
+      return;
+    }
+
+    const usernameRegex = /^[a-z0-9_-]+$/;
+    if (!usernameRegex.test(trimmed)) {
+      setUsernameStatus("invalid");
+      setUsernameMessage("Letters, numbers, underscores, and hyphens only.");
+      return;
+    }
+
+    // Instant response if already in cache
+    if (usernameCache.current.has(trimmed)) {
+      const cached = usernameCache.current.get(trimmed)!;
+      setUsernameStatus(cached.available ? "available" : "taken");
+      setUsernameMessage(cached.message);
+      return;
+    }
+
+    setUsernameStatus("checking");
+    setUsernameMessage("Checking availability...");
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/auth/check-username?username=${encodeURIComponent(trimmed)}`,
+          { signal: controller.signal }
+        );
+        const data = await res.json();
+        
+        // Cache result for instant retrieval
+        usernameCache.current.set(trimmed, {
+          available: Boolean(data.available),
+          message: data.message || (data.available ? "Username available" : "Username is already taken"),
+        });
+
+        if (data.available) {
+          setUsernameStatus("available");
+          setUsernameMessage("Username available");
+        } else {
+          setUsernameStatus("taken");
+          setUsernameMessage(data.message || "Username is already taken");
+        }
+      } catch (err: unknown) {
+        if ((err as Error).name !== "AbortError") {
+          setUsernameStatus("taken");
+          setUsernameMessage("Unable to verify username. Please try again.");
+        }
+      }
+    }, 150);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [username]);
 
   // Handle OAuth sign up
   const handleOAuth = async (strategy: "oauth_github" | "oauth_google") => {
@@ -76,6 +165,17 @@ export function CustomSignUp() {
       return;
     }
 
+    if (username.trim()) {
+      if (usernameStatus === "checking") {
+        setError("Please wait while we verify your username availability.");
+        return;
+      }
+      if (usernameStatus === "taken" || usernameStatus === "invalid") {
+        setError(usernameMessage || "Please choose an available username to continue.");
+        return;
+      }
+    }
+
     setStep(2);
   };
 
@@ -87,6 +187,11 @@ export function CustomSignUp() {
 
     if (!email.trim() || !password) {
       setError("Please provide both email and password.");
+      return;
+    }
+
+    if (username.trim() && (usernameStatus === "taken" || usernameStatus === "invalid")) {
+      setError("Please choose an available username before signing up.");
       return;
     }
 
@@ -168,16 +273,13 @@ export function CustomSignUp() {
           <div className="flex items-center gap-2.5">
             <Image
               src="/logo.svg"
-              alt="SkillForge"
+              alt="skillforge.dev"
               width={24}
               height={24}
-              className="w-6 h-6"
+              className="w-5.5 h-5.5 sm:w-6 sm:h-6"
             />
-            <span
-              className="text-lg font-bold tracking-tight text-[#E8E5D5]"
-              style={{ fontFamily: "'Instrument Serif', serif" }}
-            >
-              skillforge.dev
+            <span className="text-[#E8E5D5] text-base sm:text-lg font-bold tracking-tight">
+              skillforge<span className="text-[#E8E5D5]/70 font-normal">.dev</span>
             </span>
           </div>
 
@@ -302,7 +404,7 @@ export function CustomSignUp() {
                   </div>
                 </div>
 
-                {/* Optional Username Handle */}
+                {/* Optional Username Handle with Live Availability Feedback */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label
@@ -322,9 +424,48 @@ export function CustomSignUp() {
                       onChange={(e) => setUsername(e.target.value)}
                       placeholder="adalovelace"
                       autoComplete="username"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E8E5D5]/15 bg-[#0D0D0D] text-xs sm:text-sm text-[#E8E5D5] placeholder-[#E8E5D5]/35 focus:outline-none focus:border-[#E8E5D5]/60 transition-colors"
+                      className={`w-full pl-10 pr-10 py-2.5 rounded-xl border bg-[#0D0D0D] text-xs sm:text-sm text-[#E8E5D5] placeholder-[#E8E5D5]/35 focus:outline-none transition-colors ${
+                        usernameStatus === "available"
+                          ? "border-emerald-500/60 focus:border-emerald-400"
+                          : usernameStatus === "taken" || usernameStatus === "invalid"
+                          ? "border-red-500/60 focus:border-red-400"
+                          : "border-[#E8E5D5]/15 focus:border-[#E8E5D5]/60"
+                      }`}
                     />
+                    {/* Live status indicator on the right */}
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center">
+                      {usernameStatus === "checking" && (
+                        <Loader2 className="w-4 h-4 text-[#E8E5D5]/50 animate-spin" />
+                      )}
+                      {usernameStatus === "available" && (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      )}
+                      {(usernameStatus === "taken" || usernameStatus === "invalid") && (
+                        <XCircle className="w-4 h-4 text-red-400" />
+                      )}
+                    </div>
                   </div>
+
+                  {/* Username Availability Feedback Message */}
+                  {username.trim() && usernameStatus !== "idle" && (
+                    <div className="text-[11px] flex items-center gap-1.5 pt-0.5">
+                      {usernameStatus === "checking" && (
+                        <span className="text-[#E8E5D5]/60 flex items-center gap-1">
+                          Checking availability...
+                        </span>
+                      )}
+                      {usernameStatus === "available" && (
+                        <span className="text-emerald-400 font-medium flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0 inline" /> {usernameMessage}
+                        </span>
+                      )}
+                      {(usernameStatus === "taken" || usernameStatus === "invalid") && (
+                        <span className="text-red-400 font-medium flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0 inline" /> {usernameMessage}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Error Message */}
@@ -333,7 +474,16 @@ export function CustomSignUp() {
                 {/* Next Step Button */}
                 <button
                   type="submit"
-                  disabled={!firstName.trim() || !lastName.trim()}
+                  disabled={
+                    !firstName.trim() ||
+                    !lastName.trim() ||
+                    Boolean(
+                      username.trim() &&
+                        (usernameStatus === "taken" ||
+                          usernameStatus === "invalid" ||
+                          usernameStatus === "checking")
+                    )
+                  }
                   className="w-full mt-2 flex items-center justify-center gap-2 py-3 px-5 rounded-full bg-[#E8E5D5] hover:bg-white text-black font-semibold text-xs sm:text-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(232,229,213,0.25)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer group"
                 >
                   <span>Continue to Credentials (2/2)</span>

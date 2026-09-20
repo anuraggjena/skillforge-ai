@@ -145,16 +145,13 @@ export function CustomSignIn() {
         <div className="flex items-center gap-2.5">
           <Image
             src="/logo.svg"
-            alt="SkillForge"
+            alt="skillforge.dev"
             width={24}
             height={24}
-            className="w-6 h-6"
+            className="w-5.5 h-5.5 sm:w-6 sm:h-6"
           />
-          <span
-            className="text-lg font-bold tracking-tight text-[#E8E5D5]"
-            style={{ fontFamily: "'Instrument Serif', serif" }}
-          >
-            skillforge.dev
+          <span className="text-[#E8E5D5] text-base sm:text-lg font-bold tracking-tight">
+            skillforge<span className="text-[#E8E5D5]/70 font-normal">.dev</span>
           </span>
         </div>
 

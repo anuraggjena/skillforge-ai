@@ -5,7 +5,8 @@ import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 
 import { usePathname } from "next/navigation";
-import { LogIn, LayoutDashboard } from "lucide-react";
+import { LogIn } from "lucide-react";
+import { LiquidMetalButton } from "@/components/ui/liquid-metal";
 
 export function Navbar() {
   const { isSignedIn, isLoaded } = useUser();
@@ -21,20 +22,21 @@ export function Navbar() {
 
   return (
     <header className="relative z-20 flex flex-row items-center justify-between px-6 sm:px-8 md:px-12 py-5 max-w-7xl mx-auto w-full">
-      {/* Logo: skillforge.dev */}
+      {/* Logo: SkillForge AI */}
       <Link
         href="/"
-        className="text-xl sm:text-2xl tracking-tight text-[#E8E5D5] hover:text-white transition-colors flex items-center gap-2.5 font-bold"
-        style={{ fontFamily: "'Instrument Serif', serif" }}
+        className="inline-flex items-center gap-2.5 text-lg sm:text-2xl font-bold tracking-tight text-[#E8E5D5] hover:text-white transition-colors group"
       >
         <Image
           src="/logo.svg"
-          alt="SkillForge"
-          width={28}
-          height={28}
-          className="w-7 h-7"
+          alt="SkillForge AI"
+          width={26}
+          height={26}
+          className="w-6 h-6 sm:w-6.5 sm:h-6.5 transition-transform duration-300 group-hover:scale-105"
         />
-        <span>skillforge.dev</span>
+        <span className="text-[#E8E5D5] text-base sm:text-2xl">
+          skillforge<span className="text-[#E8E5D5]/70 font-normal">.dev</span>
+        </span>
       </Link>
 
       {/* Nav links (hidden on mobile, md:flex) */}
@@ -55,21 +57,21 @@ export function Navbar() {
       </nav>
 
       {/* CTA: Login */}
-      <Link
-        href={userSignedIn ? "/dashboard" : "/sign-in"}
-        className="flex items-center gap-2 rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-medium border border-[#E8E5D5]/25 hover:border-[#E8E5D5]/60 bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-md text-[#E8E5D5] hover:text-white transition-all cursor-pointer group"
-      >
-        {userSignedIn ? (
-          <>
-            <LayoutDashboard className="w-3.5 h-3.5 text-[#E8E5D5]/70 group-hover:text-white transition-colors" />
-            <span>Dashboard</span>
-          </>
-        ) : (
-          <>
-            <LogIn className="w-3.5 h-3.5 text-[#E8E5D5]/70 group-hover:text-white transition-colors" />
-            <span>Login</span>
-          </>
-        )}
+      <Link href={userSignedIn ? "/dashboard" : "/sign-in"}>
+        <LiquidMetalButton
+          size="sm"
+          borderWidth={2}
+          icon={<LogIn className="w-3.5 h-3.5" />}
+          metalConfig={{
+            colorBack: "#2A231C",
+            colorTint: "#E8E5D5",
+            speed: 0.35,
+            distortion: 0.12,
+            repetition: 3,
+          }}
+        >
+          Login
+        </LiquidMetalButton>
       </Link>
     </header>
   );

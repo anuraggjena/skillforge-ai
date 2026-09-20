@@ -267,6 +267,13 @@ const featuresData = [
     footerIcon: Bookmark,
     footerText: "Personalized to your skills.",
     delay: 0.08,
+    // Emerald / Teal / Cyan Aurora
+    aurora: {
+      gradient1:
+        "radial-gradient(ellipse at 30% 20%, rgba(45, 212, 191, 0.25) 0%, rgba(14, 165, 233, 0.12) 40%, rgba(16, 185, 129, 0.05) 60%, transparent 75%)",
+      gradient2:
+        "radial-gradient(ellipse at 70% 80%, rgba(16, 185, 129, 0.22) 0%, rgba(232, 229, 213, 0.08) 45%, transparent 70%)",
+    },
   },
   {
     number: "02",
@@ -278,6 +285,13 @@ const featuresData = [
     footerIcon: ShieldCheck,
     footerText: "Actionable feedback. Real improvement.",
     delay: 0.16,
+    // Violet / Purple / Indigo Aurora
+    aurora: {
+      gradient1:
+        "radial-gradient(ellipse at 30% 20%, rgba(168, 85, 247, 0.25) 0%, rgba(99, 102, 241, 0.14) 40%, rgba(236, 72, 153, 0.05) 60%, transparent 75%)",
+      gradient2:
+        "radial-gradient(ellipse at 70% 80%, rgba(236, 72, 153, 0.20) 0%, rgba(147, 197, 253, 0.08) 45%, transparent 70%)",
+    },
   },
   {
     number: "03",
@@ -289,6 +303,13 @@ const featuresData = [
     footerIcon: BarChart3,
     footerText: "Real projects. Real proof.",
     delay: 0.24,
+    // Amber / Sunset Gold / Rose Bronze Aurora
+    aurora: {
+      gradient1:
+        "radial-gradient(ellipse at 30% 20%, rgba(245, 158, 11, 0.25) 0%, rgba(249, 115, 22, 0.14) 40%, rgba(244, 63, 94, 0.05) 60%, transparent 75%)",
+      gradient2:
+        "radial-gradient(ellipse at 70% 80%, rgba(244, 63, 94, 0.20) 0%, rgba(232, 229, 213, 0.10) 45%, transparent 70%)",
+    },
   },
 ];
 
@@ -304,6 +325,32 @@ export function FeaturesSection() {
       id="features"
       className="relative w-full min-h-screen pt-8 sm:pt-10 lg:pt-12 pb-16 sm:pb-20 lg:pb-24 overflow-hidden text-[#E8E5D5] flex flex-col justify-center"
     >
+      <style>{`
+        @keyframes aurora-wave-1 {
+          0%, 100% {
+            transform: translate3d(0%, 0%, 0) rotate(0deg);
+          }
+          50% {
+            transform: translate3d(6%, -6%, 0) rotate(8deg);
+          }
+        }
+
+        @keyframes aurora-wave-2 {
+          0%, 100% {
+            transform: translate3d(0%, 0%, 0) rotate(0deg);
+          }
+          50% {
+            transform: translate3d(-6%, 6%, 0) rotate(-8deg);
+          }
+        }
+
+        .aurora-layer {
+          will-change: transform;
+          backface-visibility: hidden;
+          transform: translateZ(0);
+        }
+      `}</style>
+
       {/* --- Fullscreen Background Image (Crisp, Clearly Visible) --- */}
       <div className="absolute inset-0 z-0 select-none pointer-events-none transform-gpu">
         <Image
@@ -386,13 +433,31 @@ export function FeaturesSection() {
                   delay: feature.delay,
                   ease: easeCurve,
                 }}
-                className="group relative rounded-2xl px-5.5 py-5 sm:px-6 sm:py-5.5 border border-[#E8E5D5]/15 backdrop-blur-sm flex flex-col justify-between shadow-[0_15px_35px_rgba(0,0,0,0.6)] hover:border-[#E8E5D5]/40 hover:shadow-[0_20px_45px_rgba(0,0,0,0.75),0_0_25px_rgba(232,229,213,0.06)] hover:-translate-y-1.5 hover:scale-[1.015] transition-all duration-300 ease-out transform-gpu will-change-transform overflow-hidden cursor-pointer"
+                className="group relative rounded-2xl px-5.5 py-5 sm:px-6 sm:py-5.5 border border-[#E8E5D5]/15 flex flex-col justify-between shadow-[0_15px_35px_rgba(0,0,0,0.6)] hover:border-[#E8E5D5]/40 hover:shadow-[0_20px_45px_rgba(0,0,0,0.75),0_0_25px_rgba(232,229,213,0.06)] hover:-translate-y-1 transition-transform duration-300 ease-out transform-gpu will-change-transform overflow-hidden cursor-pointer"
                 style={{
-                  background: "rgba(10, 10, 10, 0.72)",
+                  background: "rgba(10, 10, 10, 0.82)",
                 }}
               >
-                {/* Subtle Radial Hover Highlight */}
-                <div className="absolute -inset-px opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl bg-[radial-gradient(ellipse_at_top,rgba(232,229,213,0.08),transparent_70%)]" />
+                {/* Continuous Low-Opacity Aurora Background Effect on Hover */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-out z-0 [contain:paint]">
+                  {/* Aurora Layer 1 - Continuous Wave Animation */}
+                  <div
+                    className="aurora-layer absolute -top-[20%] -left-[15%] w-[130%] h-[110%] rounded-full"
+                    style={{
+                      background: feature.aurora.gradient1,
+                      animation: "aurora-wave-1 8s ease-in-out infinite",
+                    }}
+                  />
+
+                  {/* Aurora Layer 2 - Continuous Wave Animation */}
+                  <div
+                    className="aurora-layer absolute -bottom-[15%] -right-[15%] w-[125%] h-[105%] rounded-full"
+                    style={{
+                      background: feature.aurora.gradient2,
+                      animation: "aurora-wave-2 10s ease-in-out infinite",
+                    }}
+                  />
+                </div>
 
                 {/* Top: Card Header */}
                 <div className="relative z-10">

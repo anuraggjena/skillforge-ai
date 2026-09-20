@@ -24,7 +24,7 @@ export function HeroSection() {
         initial={{ scale: 1.025, opacity: 0.9 }}
         animate={{ scale: 1.0, opacity: 1 }}
         transition={{ duration: 2.0, ease: easeCurve }}
-        className="absolute inset-0 z-0 select-none pointer-events-none"
+        className="absolute inset-0 z-0 select-none pointer-events-none transform-gpu will-change-transform"
       >
         <Image
           src="/hero.png"

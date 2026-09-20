@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowUpRight, Check, Clock, BarChart3, Layers } from "lucide-react";
+import { ArrowUpRight, Check, Clock, BarChart3, Layers } from "lucide-react";
+import { GenerateButton } from "@/components/ui/generate-button";
 
 // --- Project Data ---
 const projectData = {
@@ -176,13 +177,13 @@ export function ProjectPreviewCard() {
         </div>
       </div>
 
-      {/* CTA Button */}
-      <Link
-        href={projectData.ctaLink}
-        className="group w-full py-2.5 px-4 rounded-full bg-[#E8E5D5] hover:bg-white text-black font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-300 shadow-md cursor-pointer mt-0.5"
-      >
-        <span>{projectData.ctaText}</span>
-        <ArrowRight className="w-3.5 h-3.5 text-black group-hover:translate-x-1 transition-transform duration-300" />
+      {/* CTA Button: GenerateButton */}
+      <Link href={projectData.ctaLink} className="w-full mt-0.5 block">
+        <GenerateButton
+          text={projectData.ctaText}
+          generatingText="Generating Project..."
+          hue={42}
+        />
       </Link>
     </motion.div>
   );
@@ -209,11 +210,11 @@ export function PerspectiveStage() {
           repeat: Infinity,
           ease: "easeInOut",
         }}
-        className="relative w-full [transform-style:preserve-3d]"
+        className="relative w-full [transform-style:preserve-3d] transform-gpu will-change-transform [backface-visibility:hidden]"
       >
         {/* --- AI Review Card (Strictly BEHIND Project Card: z-0, pushed UP to -88px) --- */}
         <div
-          className="absolute -top-[88px] sm:-top-[96px] right-[18px] sm:right-[26px] z-0 [transform-origin:right_center] [transform-style:preserve-3d]"
+          className="absolute -top-[88px] sm:-top-[96px] right-[18px] sm:right-[26px] z-0 [transform-origin:right_center] [transform-style:preserve-3d] transform-gpu [backface-visibility:hidden]"
           style={{
             transform: "rotateY(-15deg) translateZ(-15px)",
           }}
@@ -223,7 +224,7 @@ export function PerspectiveStage() {
 
         {/* --- Project Preview Card (FRONT MAIN CARD: z-10, positive translateZ) --- */}
         <div
-          className="relative z-10 flex justify-end [transform-origin:right_center] [transform-style:preserve-3d]"
+          className="relative z-10 flex justify-end [transform-origin:right_center] [transform-style:preserve-3d] transform-gpu [backface-visibility:hidden]"
           style={{
             transform: "rotateY(-14deg) translateZ(10px)",
           }}

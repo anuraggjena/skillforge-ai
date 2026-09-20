@@ -22,6 +22,7 @@ export async function createUserInDb(userId: string) {
     const fallbackName = clerkUser.username || (email ? email.split('@')[0] : '') || 'Developer';
     const name = fullName || fallbackName;
     const avatar = clerkUser.imageUrl;
+    const username = clerkUser.username || null;
 
     const newUser = await db
       .insert(users)
@@ -30,6 +31,7 @@ export async function createUserInDb(userId: string) {
         email: email,
         name: name,
         avatarUrl: avatar,
+        username: username,
       })
       .onConflictDoUpdate({
         target: users.id,
@@ -37,6 +39,7 @@ export async function createUserInDb(userId: string) {
           email: email,
           ...(name ? { name } : {}),
           ...(avatar ? { avatarUrl: avatar } : {}),
+          ...(username ? { username } : {}),
         },
       })
       .returning();

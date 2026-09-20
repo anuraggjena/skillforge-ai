@@ -34,7 +34,7 @@ export default function SignInPage() {
       </div>
 
       {/* Top Navigation Bar: Back Button */}
-      <header className="relative z-10 w-full max-w-7xl mx-auto px-5 sm:px-8 md:px-12 pt-6 sm:pt-8 flex items-center justify-between">
+      <header className="relative z-10 w-full max-w-7xl mx-auto px-5 sm:px-8 md:px-12 pt-6 sm:pt-8 flex items-center justify-start">
         <BackToLanding />
       </header>
 

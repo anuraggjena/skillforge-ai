@@ -11,7 +11,7 @@ import { ScrollToTop } from "@/components/shared/scroll-to-top";
 const outfit = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Skillforge.dev",
+  title: "SkillForge",
   description: "Bridge the gap between learning and doing with AI-generated projects.",
 };
 

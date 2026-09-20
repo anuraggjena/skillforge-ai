@@ -3,7 +3,7 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { db } from "@/lib/drizzle/client";
 import { users } from "@/lib/drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 // This action accepts FormData, which is what we need
@@ -49,10 +49,24 @@ export async function updateUserVisibility(formData: FormData) {
     throw new Error("Unauthorized");
   }
 
-  const username = formData.get("username") as string;
+  const rawUsername = formData.get("username") as string;
   const isPublic = formData.get("isPublic") === "on"; // The value from a checked Switch is "on"
 
-  // TODO: Add validation here to check if the username is already taken by another user.
+  const username = rawUsername ? rawUsername.trim().toLowerCase() : null;
+
+  if (username) {
+    // Check if taken by another user
+    const existing = await db.query.users.findFirst({
+      where: and(
+        sql`lower(${users.username}) = ${username}`,
+        ne(users.id, userId)
+      ),
+    });
+
+    if (existing) {
+      throw new Error("Username already taken. Please choose another username.");
+    }
+  }
   
   await db.update(users)
     .set({ username, isPublic })
