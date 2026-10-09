@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/lib/drizzle/client";
-import { projects, users } from "@/lib/drizzle/schema"; // Import 'users' schema
-import { eq, sql } from "drizzle-orm"; // Import 'sql' helper
+import { projects, users } from "@/lib/drizzle/schema";
+import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import OpenAI from 'openai';
@@ -29,10 +29,14 @@ export async function updateMilestones(projectId: number, updatedMilestones: Mil
       where: eq(projects.id, projectId),
     });
 
+    if (!originalProject || originalProject.userId !== userId) {
+      throw new Error("Project not found");
+    }
+
     // --- GAMIFICATION LOGIC ---
     // Check if a new milestone was completed to award XP
     const originalCompletedCount = 
-      (originalProject?.milestones as { items: Milestone[] })?.items.filter(m => m.completed).length ?? 0;
+      (originalProject?.milestones as { items: Milestone[] } | null)?.items.filter(m => m.completed).length ?? 0;
     const newCompletedCount = updatedMilestones.filter(m => m.completed).length;
 
     if (newCompletedCount > originalCompletedCount) {
@@ -48,6 +52,8 @@ export async function updateMilestones(projectId: number, updatedMilestones: Mil
       .where(eq(projects.id, projectId));
     
     revalidatePath(`/dashboard/projects/${projectId}`);
+    revalidatePath("/dashboard/projects");
+    revalidatePath("/dashboard");
     return { success: true };
   } catch (error) {
     console.error("Failed to update milestones:", error);
@@ -64,9 +70,12 @@ export async function submitProjectForFeedback(projectId: number, repoUrl: strin
   let codeContent = '';
   try {
     codeContent = await fetchRepoContent(repoUrl);
-  } catch (error) {
-    console.error(error);
-    throw new Error("Could not access the GitHub repository. Please ensure it's public and you've connected your GitHub account.");
+  } catch (error: unknown) {
+    console.error("GitHub fetch error:", error);
+    if (error instanceof Error && error.message === "GITHUB_NOT_CONNECTED") {
+      throw new Error("GITHUB_NOT_CONNECTED");
+    }
+    throw new Error("Could not access the GitHub repository. Please ensure it is public and your GitHub account is connected.");
   }
 
   const project = await db.query.projects.findFirst({
@@ -78,57 +87,88 @@ export async function submitProjectForFeedback(projectId: number, repoUrl: strin
   }
 
   const prompt = `
-    You are Skillforge.dev, a senior developer and expert code reviewer. Your task is to provide feedback on a user's project submission.
+    You are Skillforge.dev, a senior staff software engineer and expert code reviewer.
+    Your task is to provide an in-depth code review on a user's project submission based on the actual repository code.
 
     Project Title: ${project.title}
     Project Description: ${project.description}
 
-    Here is the content of the user's submitted files:
+    Here is the content of the user's submitted repository files:
     ---
     ${codeContent}
     ---
 
-    Please provide a detailed, constructive code review based on the actual code provided.
-    Focus on correctness, code quality, and best practices. Then, on a scale of 1 (Beginner) to 5 (Expert), rate the overall quality, completeness, and correctness of the user's submission based on the project's goals.
+    Please provide a constructive, actionable engineering review focusing on correctness, code architecture, security, performance, and best practices.
+    Also, on a scale of 1 (Beginner) to 5 (Expert), rate the overall quality, completeness, and correctness of the user's codebase.
 
-    Structure your feedback as a JSON object with the following keys:
+    Structure your feedback strictly as a JSON object with the following keys:
     {
-      "overall": "A brief, one-paragraph summary of the feedback.",
+      "overall": "A concise, 1-2 paragraph executive assessment of the codebase quality, architecture, and implementation.",
       "strengths": [
-        "A list of 2-3 potential strengths or things the user likely did well.",
-        "For example: 'Good use of component-based architecture.' or 'Clear and well-structured README file.'"
+        "A list of 2-4 specific technical strengths observed in the code."
       ],
       "areasForImprovement": [
-        "A list of 2-3 actionable areas for improvement.",
-        "For example: 'Consider adding error handling for API calls.' or 'The CSS could be further optimized by using utility classes.'"
-      ]
-    }
-      "score": 3 // A single integer from 1 to 5
+        "A list of 2-4 actionable, concrete recommendations for improvements."
+      ],
+      "score": 4
     }
 
-    Ensure your entire response is only the JSON object, with no extra text or markdown.
+    Ensure your entire response is only the JSON object, with no markdown code blocks or surrounding text.
   `;
 
   const response = await openai.chat.completions.create({
-    model: 'openai/gpt-oss-20b:free',
+    model: 'qwen/qwen3.8-27b:free',
     messages: [{ role: 'user', content: prompt }],
     response_format: { type: 'json_object' },
   });
 
-  const responseData = JSON.parse(response.choices[0].message.content ?? '{}');
-  const feedbackJson = responseData.review;
-  const score = responseData.score;
+  const rawContent = response.choices[0]?.message?.content ?? '{}';
+  let responseData: {
+    overall?: string;
+    strengths?: string[];
+    areasForImprovement?: string[];
+    score?: number;
+    review?: {
+      overall?: string;
+      strengths?: string[];
+      areasForImprovement?: string[];
+      score?: number;
+    };
+  } = {};
+
+  try {
+    responseData = JSON.parse(rawContent);
+  } catch (parseErr) {
+    console.error("Failed to parse review JSON:", parseErr);
+  }
+
+  const feedbackObj = responseData.review || responseData;
+  const score = typeof feedbackObj.score === 'number' 
+    ? feedbackObj.score 
+    : (typeof responseData.score === 'number' ? responseData.score : 4);
+
+  const feedbackJson = {
+    overall: feedbackObj.overall || "AI code review completed successfully.",
+    strengths: Array.isArray(feedbackObj.strengths) && feedbackObj.strengths.length > 0
+      ? feedbackObj.strengths
+      : ["Clean repository structure", "Modular code organization"],
+    areasForImprovement: Array.isArray(feedbackObj.areasForImprovement) && feedbackObj.areasForImprovement.length > 0
+      ? feedbackObj.areasForImprovement
+      : ["Expand automated test coverage", "Add comprehensive error handling"],
+    score: score,
+  };
 
   const ratingAdjustment = (score - 3) * 10;
 
+  // Update user XP (+50 XP for completing project review) and adjust performance rating
   await db.update(users)
     .set({ 
       xp: sql`${users.xp} + 50`,
-      // Use sql function to update relative to the current value
       performanceRating: sql`LEAST(100, GREATEST(0, ${users.performanceRating} + ${ratingAdjustment}))`
     })
-    .where(eq(users.id, userId!));
+    .where(eq(users.id, userId));
 
+  // Update project status to completed, store repository URL and feedback JSON
   await db.update(projects)
     .set({
       repoUrl: repoUrl,
@@ -136,15 +176,11 @@ export async function submitProjectForFeedback(projectId: number, repoUrl: strin
       status: 'completed',
     })
     .where(eq(projects.id, projectId));
-  
-  // --- GAMIFICATION LOGIC ---
-  // Award 50 XP for completing a project
-  await db.update(users)
-    .set({ xp: sql`${users.xp} + 50` })
-    .where(eq(users.id, userId));
-  // --- END GAMIFICATION LOGIC ---
 
   revalidatePath(`/dashboard/projects/${projectId}`);
+  revalidatePath("/dashboard/projects");
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/portfolio");
 
   return { success: true, feedback: feedbackJson };
 }

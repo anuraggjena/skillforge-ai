@@ -1,38 +1,36 @@
-import { currentUser } from "@clerk/nextjs/server";
-import { ProjectGenerator } from "@/components/projects/project-generator";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { SkillGraph } from "@/components/dashboard/skill-graph";
-import { getSkillData } from "@/lib/actions/user.actions";
+import { auth } from "@clerk/nextjs/server";
+import { getDashboardData } from "@/lib/dashboard-data";
+import { DashboardView } from "@/components/dashboard/dashboard-view";
+import { createUserInDb } from "@/lib/actions/user.actions";
+import { Suspense } from "react";
+import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
+
+export const runtime = "nodejs";
 
 export default async function DashboardPage() {
-  const user = await currentUser();
-  const skillData = await getSkillData();
+  const { userId } = await auth();
 
-  // This check is a failsafe; middleware should handle unauthenticated users.
-  if (!user) {
-    return <div>You are not logged in.</div>;
+  if (!userId) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <p className="text-sm text-[#E8E5D5]/60">You are not authenticated. Please sign in.</p>
+      </div>
+    );
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Welcome back, {user.firstName}!</h1>
-        <p className="text-muted-foreground">Here&apos;s your skill-building command center. What will you forge today?</p>
-      </div>
-      
-      {/* This component contains the form to generate a new project */}
-      <ProjectGenerator />
+  // Ensure user is synchronized with our database
+  try {
+    await createUserInDb(userId);
+  } catch (err) {
+    console.error("User DB sync non-fatal error:", err);
+  }
 
-      {/* Placeholder for the Skill Graph which we will build next */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Your Skill Graph</CardTitle>
-          <CardDescription>
-            This graph visualizes the skills you&apos;ve used in completed projects.
-          </CardDescription>
-        </CardHeader>
-        <SkillGraph data={skillData}/>
-      </Card>
-    </div>
+  // Fetch full dashboard data server-side
+  const dashboardData = await getDashboardData(userId);
+
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <DashboardView data={dashboardData} />
+    </Suspense>
   );
 }

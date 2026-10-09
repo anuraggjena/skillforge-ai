@@ -50,14 +50,14 @@ export async function POST(req: Request) {
     `;
 
     const response = await openai.chat.completions.create({
-      model: 'openai/gpt-oss-20b:free',
+      model: 'qwen/qwen3.8-27b:free',
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' },
     });
 
-    const challengeJSON = response.choices[0].message.content;
+    const challengeJSON = response.choices[0]?.message?.content;
     if (!challengeJSON) {
-        throw new Error("AI did not return a valid challenge.");
+      throw new Error("AI did not return a valid challenge.");
     }
 
     const newChallengeData = JSON.parse(challengeJSON);

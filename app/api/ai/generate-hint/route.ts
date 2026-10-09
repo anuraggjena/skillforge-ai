@@ -41,12 +41,12 @@ export async function POST(req: Request) {
 
     // Make the API call to OpenAI
     const response = await openai.chat.completions.create({
-      model: 'openai/gpt-oss-20b:free',
+      model: 'qwen/qwen3.8-27b:free',
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' },
     });
 
-    const hint = response.choices[0].message.content;
+    const hint = response.choices[0]?.message?.content;
 
     // Return the AI's response to the frontend
     return new NextResponse(hint, {

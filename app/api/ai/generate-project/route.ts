@@ -31,11 +31,11 @@ export async function POST(req: Request) {
     const performanceRating = user?.performanceRating ?? 50;
 
     let difficultyInstruction = "The project should be of average difficulty.";
-  if (performanceRating > 75) {
-    difficultyInstruction = "The user is performing well. Generate a challenging project that introduces a new concept or a more complex architecture.";
-  } else if (performanceRating < 25) {
-    difficultyInstruction = "The user is struggling. Generate a simpler, more foundational project to help them build confidence.";
-  }
+    if (performanceRating > 75) {
+      difficultyInstruction = "The user is performing well. Generate a challenging project that introduces a new concept or a more complex architecture.";
+    } else if (performanceRating < 25) {
+      difficultyInstruction = "The user is struggling. Generate a simpler, more foundational project to help them build confidence.";
+    }
     
     const projectTypeInstruction = projectType === 'micro'
       ? "The project must be a 'Micro-Project'. This means it should be a small, focused challenge that can be completed in under an hour."
@@ -62,20 +62,19 @@ export async function POST(req: Request) {
     `;
 
     const response = await openai.chat.completions.create({
-      model: 'openai/gpt-oss-20b:free',
+      model: 'qwen/qwen3.8-27b:free',
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' },
     });
 
-    const projectBriefJSON = response.choices[0].message.content;
+    const projectBriefJSON = response.choices[0]?.message?.content;
     if (!projectBriefJSON) {
-        throw new Error("AI did not return a valid project brief.");
+      throw new Error("AI did not return a valid project brief.");
     }
 
     const projectBrief = JSON.parse(projectBriefJSON);
 
     // --- SAVE PROJECT AND SKILLS TO DATABASE ---
-
     const newProject = await db.insert(projects).values({
       userId: userId,
       title: projectBrief.title,
@@ -106,9 +105,10 @@ export async function POST(req: Request) {
       }
     }
     
-    // Return the original JSON string from the AI to the frontend
-    return new NextResponse(projectBriefJSON, {
-      headers: { 'Content-Type': 'application/json' },
+    // Return the project brief along with the saved database projectId
+    return NextResponse.json({
+      ...projectBrief,
+      projectId,
     });
 
   } catch (error) {

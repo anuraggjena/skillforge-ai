@@ -1,10 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/drizzle/client";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { projects } from "@/lib/drizzle/schema";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+import { ProjectGenerator } from "@/components/projects/project-generator";
+import { ProjectsListClient } from "@/components/projects/projects-list-client";
+import { ProjectCardData } from "@/components/projects/project-card";
+
+export const runtime = "nodejs";
 
 export default async function ProjectsPage() {
   const { userId } = await auth();
@@ -12,47 +14,51 @@ export default async function ProjectsPage() {
     return <div>Not authorized.</div>;
   }
 
-  // Fetch all projects for the current user from the database
-  const userProjects = await db.query.projects.findMany({
+  // Fetch all projects for the current user including linked skills
+  const rawProjects = await db.query.projects.findMany({
     where: eq(projects.userId, userId),
-    orderBy: (projects, { desc }) => [desc(projects.createdAt)],
+    orderBy: [desc(projects.createdAt)],
+    with: {
+      projectSkills: {
+        with: {
+          skill: true,
+        },
+      },
+    },
   });
 
+  // Map to strongly typed ProjectCardData
+  const userProjects: ProjectCardData[] = rawProjects.map((p) => ({
+    id: p.id,
+    title: p.title,
+    description: p.description,
+    status: p.status as "in-progress" | "completed",
+    projectType: (p.projectType as "micro" | "real-world") || "real-world",
+    milestones: p.milestones as ProjectCardData["milestones"],
+    createdAt: p.createdAt,
+    repoUrl: p.repoUrl,
+    feedback: p.feedback,
+    skills: p.projectSkills?.map((ps) => ({
+      id: ps.skill.id,
+      name: ps.skill.name,
+    })) ?? [],
+  }));
+
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">My Projects</h1>
-        <p className="text-muted-foreground">Here is a list of all your generated projects.</p>
+    <div className="space-y-6 sm:space-y-8 pb-10">
+      {/* Page Header */}
+      <div className="space-y-1">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#F4F1E8]">Projects</h1>
+        <p className="text-xs sm:text-sm text-[#E8E5D5]/65">
+          Build real projects. Gain real skills.
+        </p>
       </div>
 
-      {userProjects.length === 0 ? (
-        <p className="text-muted-foreground">You haven&apos;t generated any projects yet. Go to the dashboard to create one!</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {userProjects.map((project) => {
+      {/* Project Generator Section */}
+      <ProjectGenerator />
 
-            const href = `/dashboard/projects/${project.id}`; 
-            console.log(`Generating link for Project ID: ${project.id}, Href: ${href}`);
-            return (
-            <Link href={href} key={project.id}>
-              <Card className="hover:border-primary transition-colors h-full">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg">{project.title}</CardTitle>
-                    <Badge variant={project.projectType === 'micro' ? 'default' : 'secondary'}>
-                      {project.projectType}
-                    </Badge>
-                  </div>
-                  <CardDescription className="pt-2 line-clamp-3">
-                    {project.description}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-            )
-          })}
-        </div>
-      )}
+      {/* Interactive Projects List */}
+      <ProjectsListClient projects={userProjects} />
     </div>
   );
 }

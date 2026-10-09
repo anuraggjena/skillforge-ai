@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/drizzle/client";
 import { users, projects, skills, projectSkills } from "@/lib/drizzle/schema";
-import { eq, and, count } from "drizzle-orm";
+import { eq, and, count, isNotNull } from "drizzle-orm";
 import { clerkClient, auth } from "@clerk/nextjs/server";
 
 // Keep these helper functions
@@ -73,7 +73,8 @@ export async function getSkillData() {
     .innerJoin(projects, eq(projectSkills.projectId, projects.id))
     .where(and(
       eq(projects.userId, userId),
-      eq(projects.status, 'completed')
+      eq(projects.status, 'completed'),
+      isNotNull(projects.feedback)
     ))
     .groupBy(skills.name)
     .orderBy(count(skills.id));
@@ -98,7 +99,8 @@ export async function getSkillDataForUser(userId: string) {
     .innerJoin(projects, eq(projectSkills.projectId, projects.id))
     .where(and(
       eq(projects.userId, userId),
-      eq(projects.status, 'completed')
+      eq(projects.status, 'completed'),
+      isNotNull(projects.feedback)
     ))
     .groupBy(skills.name)
     .orderBy(count(skills.id));

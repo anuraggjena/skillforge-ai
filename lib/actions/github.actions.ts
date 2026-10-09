@@ -13,7 +13,7 @@ export async function fetchRepoContent(repoUrl: string) {
   if (!userId) throw new Error("Unauthorized");
 
   // 1. Get the user's GitHub OAuth token from Clerk
-  const provider = "oauth_github";
+  const provider = "github";
   const clerkResponse = await (await clerkClient()).users.getUserOauthAccessToken(userId, provider);
   const accessToken = clerkResponse.data[0]?.token;
 

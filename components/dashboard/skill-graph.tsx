@@ -12,7 +12,7 @@ export function SkillGraph({ data }: { data: SkillData[] }) {
     return (
       <div className="p-6 h-64 flex items-center justify-center bg-muted/50 rounded-b-lg">
         <p className="text-sm text-muted-foreground">
-          Complete a project to see your skill graph grow!
+          Complete a project code review to see your verified skill graph grow!
         </p>
       </div>
     );
